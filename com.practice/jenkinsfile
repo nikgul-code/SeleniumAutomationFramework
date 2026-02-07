@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven-3'   // We will configure this in Jenkins
+        jdk 'JDK-21'      // Match your Jenkins image
+    }
+
+    environment {
+        MAVEN_OPTS = "-Xmx1024m"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/nikgul-code/SeleniumAutomationFramework.git'
+            }
+        }
+
+        stage('Clean & Build') {
+            steps {
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Run Selenium Tests') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+    }
+
+    post {
+        always {
+            junit '**/target/surefire-reports/*.xml'
+        }
+        success {
+            echo "🎉 Selenium tests passed!"
+        }
+        failure {
+            echo "❌ Selenium tests failed!"
+        }
+    }
+}
